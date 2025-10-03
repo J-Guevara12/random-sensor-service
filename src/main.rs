@@ -5,6 +5,7 @@ use std::time::Duration;
 use std::process::exit;
 use signal_hook::consts::SIGTERM;
 use signal_hook::iterator::Signals;
+use chrono::{Utc};
 
 fn main() {
     let mut signals = Signals::new(&[SIGTERM]).expect("Failed to create signal handler");
@@ -16,8 +17,12 @@ fn main() {
             break;
         }
 
-        match sensor::read_sensor("/dev/urandoma") {
-            Ok(value) => println!("Read sensor value: {}", value),
+        let now = Utc::now();
+        let timestamp = now.to_rfc3339();
+
+
+        match sensor::read_sensor("/dev/urandom") {
+            Ok(value) => println!("{} | 0x{:X}", timestamp, value),
             Err(e) => {eprintln!("Error reading sensor: {}", e); exit(66)},
         }
 

@@ -20,8 +20,8 @@ Acceptance Criteria:
 
 ## Stage 3: Logging and Error Handling 
 Acceptance Criteria:
-- [ ] Generate ISO-8601 timestamp using chrono.
-- [ ] Append log line: timestamp | value (hex or decimal).
+- [X] Generate ISO-8601 timestamp using chrono.
+- [X] Append log line: timestamp | value (hex or decimal).
 - [ ] Open log file in /tmp, fallback to /var/tmp if unwritable.
 - [ ] Line-buffered logging to avoid partial lines.
 - [ ] Handle file write errors gracefully.

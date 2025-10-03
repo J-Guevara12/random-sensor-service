@@ -1,18 +1,22 @@
 use std::io::{self, BufWriter, LineWriter, Write};
 use std::io::stderr;
 use std::fs::OpenOptions;
+use std::path::Path;
 
 pub type LogWriter = LineWriter<BufWriter<Box<dyn Write + Send>>>;
 
-pub fn setup_logger() -> LogWriter {
-    let paths = ["/tmp/random_sensor.log", "/var/tmp/random_sensor.log"];
+pub fn setup_logger(logfile: &str) -> LogWriter {
+    let primary_path = Path::new(logfile);
+    let fallback_path = primary_path.to_str().unwrap().replace("/tmp/", "/var/tmp/");
 
-    for path in paths.iter() {
+    let paths = vec![primary_path.to_str().unwrap(), &fallback_path];
+
+    for path_str in paths.iter() {
         if let Ok(file) = OpenOptions::new()
             .append(true)
             .create(true)
             .write(true)
-            .open(path) {
+            .open(path_str) {
             let writer: Box<dyn Write + Send> = Box::new(file);
             return LineWriter::new(BufWriter::new(writer));
         }
@@ -24,7 +28,8 @@ pub fn setup_logger() -> LogWriter {
 }
 
 pub fn log_message(writer: &mut LogWriter, msg: &str) -> io::Result<()> {
-    writeln!(writer, "{}", msg)
+    writeln!(writer, "{}", msg)?;
+    writer.flush()
 }
 
 #[cfg(test)]
@@ -34,21 +39,16 @@ mod tests {
 
     #[test]
     fn test_log_message_basic() {
-        let inner_vec: Vec<u8> = Vec::new();
-        let inner = Box::new(Cursor::new(inner_vec)) as Box<dyn Write + Send>;
+        let inner = Box::new(Cursor::new(Vec::<u8>::new())) as Box<dyn Write + Send>;
         let mut writer = LineWriter::new(BufWriter::new(inner));
-
         let result = log_message(&mut writer, "test message");
         assert!(result.is_ok());
-
-        // To verify, we'd need to extract the buffer, but for unit test, check no error
-        // Actual output verification can be in integration tests
     }
 
     #[test]
     fn test_setup_logger_returns_valid_writer() {
-        let mut writer = setup_logger();
+        let mut writer = setup_logger("/tmp/test.log");
         let result = log_message(&mut writer, "test setup");
-        assert!(result.is_ok(), "Setup logger should provide writable output");
+        assert!(result.is_ok());
     }
 }

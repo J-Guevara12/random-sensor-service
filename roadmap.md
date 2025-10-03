@@ -29,9 +29,9 @@ Acceptance Criteria:
 
 ## Stage 4: CLI Configuration 
 Acceptance Criteria:
-- [ ] Use clap to parse flags: --interval <seconds> (default 5), --logfile <path> (default /tmp/sensor.log), --device <path> (default /dev/urandom).
-- [ ] Validate inputs (e.g., interval > 0).
-- [ ] Print usage/help on --help.
+- [X] Use clap to parse flags: --interval <seconds> (default 5), --logfile <path> (default /tmp/sensor.log), --device <path> (default /dev/urandom).
+- [X] Validate inputs (e.g., interval > 0).
+- [X] Print usage/help on --help.
 
 
 ## Stage 5: Systemd Integration 

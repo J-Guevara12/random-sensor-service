@@ -1,4 +1,4 @@
-# Random Sensor Service README
+# Random Sensor Service
 
 ## Prereqs
 - Rust toolchain (stable): Install via `rustup` (https://rustup.rs/)
@@ -27,6 +27,11 @@ CLI flags (via ExecStart in service file):
 - `--device <path>`: Sensor device (default: /dev/urandom)
 
 Example: `./assignment-sensor --interval 10 --logfile /var/tmp/sensor.log`
+
+
+## Implementation roadmap
+
+An implementation roadmap is available at `roadmap.md`.
 
 ## Testing
 ### Unit Tests (Native Rust Tooling)

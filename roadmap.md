@@ -36,28 +36,28 @@ Acceptance Criteria:
 
 ## Stage 5: Systemd Integration 
 Acceptance Criteria:
-- [ ] Create systemd/assignment-sensor.service with correct ExecStart, Type=simple, Restart=on-failure.
-- [ ] After=multi-user.target, WantedBy=multi-user.target.
-- [ ] Install script or docs for copying binary and unit file.
+- [X] Create systemd/assignment-sensor.service with correct ExecStart, Type=simple, Restart=on-failure.
+- [X] After=multi-user.target, WantedBy=multi-user.target.
+- [X] Install script or docs for copying binary and unit file.
 
 
 ## Stage 6: Testing 
 Acceptance Criteria:
-- [ ] tests/ directory with scripts: happy path (start service, check logs), fallback (make /tmp unwritable), SIGTERM handling, failure (invalid device).
-- [ ] cargo test for unit tests if applicable (e.g., timestamp formatting, reading device).
-- [ ] Manual test instructions in README.
+- [X] tests/ directory with scripts: happy path (start service, check logs), fallback (make /tmp unwritable), SIGTERM handling, failure (invalid device).
+- [X] cargo test for unit tests if applicable (e.g., timestamp formatting, reading device).
+- [X] Manual test instructions in README.
 
 
 ## Stage 7: Documentation and AI Evidence 
 Acceptance Criteria:
-- [ ] README.md with prereqs, clone/build/install/uninstall/test steps.
+- [X] README.md with prereqs, clone/build/install/uninstall/test steps.
 - [ ] ai/ folder: prompt-log.md (this interaction), reflection.md, provenance.json.
-- [ ] Makefile or just cargo commands for one-command build.
+- [X] Makefile or just cargo commands for one-command build.
 
 
 ## Stage 8: Final Polish 
 Acceptance Criteria:
-- [ ] Run full tests.
-- [ ] Ensure reproducible build.
-- [ ] Commit to git and push.
-- [ ] Verify on fresh machine if possible.
+- [X] Run full tests.
+- [X] Ensure reproducible build.
+- [X] Commit to git and push.
+- [X] Verify on fresh machine if possible.

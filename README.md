@@ -1,9 +1,33 @@
 # Random Sensor Service
 
+## Overview
+This is a systemd service implemented in Rust that periodically reads random u32 values from a device (default: /dev/urandom), logs them with ISO-8601 timestamps in uppercase hex to /tmp/sensor.log (with fallback to /var/tmp if unwritable), and handles SIGTERM gracefully. On sensor read failure, exits with code 66 (triggers restart if configured).
+
+Sample log output:
+```
+2025-10-03T04:16:45.125651336Z | 0x233EE044
+2025-10-03T04:16:51.264068578Z | 0xB72ED7AB
+Received SIGTERM, exiting gracefully.
+```
+
+Service status (via `systemctl status random-sensor.service`):
+```
+random-sensor.service - Random Sensor Logging Service
+     Loaded: loaded (/etc/systemd/system/random-sensor.service; enabled; preset: disabled)
+     Active: active (running) since Fri 2025-10-03 01:15:39 -05; 1min 0s ago
+   Main PID: 558826 (random-sensor-s)
+      Tasks: 1 (limit: 23970)
+     Memory: 1.6M (peak: 1.7M)
+        CPU: 10ms
+     CGroup: /system.slice/random-sensor.service
+             └─558826 /usr/local/bin/random-sensor-service --interval 5 --logfile /tmp/sensor.log --device /dev/urandom
+```
+
 ## Prereqs
 - Rust toolchain (stable): Install via `rustup` (https://rustup.rs/)
 - systemd (for service management)
 - Basic CLI tools (e.g., `cargo`, `systemctl`)
+- Sudo access for installation
 
 ## Clone & Build
 ```bash
@@ -11,55 +35,80 @@ git clone <repo-url>
 cd 3-random-sensor-service
 cargo build --release
 ```
-- Produces binary: `target/release/assignment-sensor`
-- For development: `cargo build`
+- Binary: `target/release/random-sensor-service`
+- For dev: `cargo build`
 
 ## Install & Enable
-1. Copy binary: `sudo cp target/release/assignment-sensor /usr/local/bin/`
-2. Copy unit: `sudo cp systemd/assignment-sensor.service /etc/systemd/system/`
-3. Reload: `sudo systemctl daemon-reload`
-4. Enable & start: `sudo systemctl enable --now assignment-sensor.service`
+Use the provided script:
+```bash
+./install.sh
+```
+- Builds release binary, copies to `/usr/local/bin/random-sensor-service` (sudo required).
+- Copies unit file to `/etc/systemd/system/random-sensor.service`.
+- Enables and starts the service.
+- Service runs with default: 5s interval, /tmp/sensor.log, /dev/urandom.
+
+Manual steps (if preferred):
+1. `sudo cp target/release/random-sensor-service /usr/local/bin/random-sensor-service && sudo chmod +x /usr/local/bin/random-sensor-service`
+2. `sudo cp systemd/assignment-sensor.service /etc/systemd/system/random-sensor.service` (rename to match)
+3. `sudo systemctl daemon-reload`
+4. `sudo systemctl enable --now random-sensor.service`
 
 ## Configuration
-CLI flags (via ExecStart in service file):
-- `--interval <seconds>`: Sampling interval (default: 5)
-- `--logfile <path>`: Log path (default: /tmp/assignment_sensor.log; fallback: /var/tmp/assignment_sensor.log)
-- `--device <path>`: Sensor device (default: /dev/urandom)
+Edit `/etc/systemd/system/random-sensor.service` (ExecStart line):
+- `--interval <seconds>`: Sampling rate (default: 5; must >0)
+- `--logfile <path>`: Log destination (default: /tmp/sensor.log; fallback to /var/tmp if unwritable)
+- `--device <path>`: Input device (default: /dev/urandom; must be readable, >=4 bytes)
 
-Example: `./assignment-sensor --interval 10 --logfile /var/tmp/sensor.log`
+After changes: `sudo systemctl daemon-reload && sudo systemctl restart random-sensor.service`
 
+Run manually: `./target/release/random-sensor-service --interval 10 --logfile /var/tmp/sensor.log --device /dev/urandom`
 
-## Implementation roadmap
+Help: `./target/release/random-sensor-service --help`
 
-An implementation roadmap is available at `roadmap.md`.
+## Service Management
+- Status: `sudo systemctl status random-sensor.service`
+- Logs (systemd): `journalctl -u random-sensor.service -f`
+- Logs (file): `tail -f /tmp/sensor.log`
+- Restart: `sudo systemctl restart random-sensor.service`
+- Stop: `sudo systemctl stop random-sensor.service`
+- Disable: `sudo systemctl disable random-sensor.service`
+
+On sensor error (e.g., invalid device), exits 66; service restarts due to `Restart=on-failure` (after 5s).
 
 ## Testing
-### Unit Tests (Native Rust Tooling)
-- Run: `cargo test`
-- Covers: sensor reading, timestamp formatting, CLI parsing, error handling.
-- To run a single test: `cargo test test_name -- --exact` (e.g., `cargo test timestamp_format -- --exact`)
+### Unit Tests
+`cargo test` - Covers sensor read (happy/unhappy paths), logging, CLI validation, signal handling (6 tests).
 
-### Integration & Manual Tests
-Use scripts in `tests/`:
-1. **Happy Path**: `./tests/happy_path.sh` - Starts service, checks logs after intervals.
-   Expected: Lines like `2025-10-02T12:00:00Z | 0x12345678` in log file.
-2. **Fallback**: `./tests/fallback.sh` - Simulates unwritable /tmp, verifies fallback log.
-3. **SIGTERM**: `./tests/sigterm.sh` - Stops service, confirms clean exit, no partial lines.
-4. **Failure**: `./tests/failure.sh` - Invalid device, expects non-zero exit and error message.
-5. **Restart**: Kill process; systemd should restart (if Restart=on-failure configured).
+### Integration Tests
+Scripts in `tests/`:
+- `sigterm_test.sh`: Graceful SIGTERM, at least one read + exit message.
+- `output_format_test.sh`: Validates timestamp + hex format in log file.
+- `logger_edge_test.sh`: Writable/fallback logging, invalid paths (stderr).
+- `interval_test.sh`: Varies --interval, counts log entries (~ proportional to 1/interval).
+- `device_test.sh`: Valid device (logs values), errors (non-existing: "No such file or directory", unreadable: "Permission denied", short: "failed to fill whole buffer"; exit 66, empty log).
 
-Verify service: `systemctl status assignment-sensor.service` and `journalctl -u assignment-sensor.service`
+Run all: `./test.sh` (in project root; runs all .sh in tests/, reports PASS/FAIL).
+
+Manual: Simulate failure by editing service device to invalid path, restart, check journalctl for exit 66 + restart.
 
 ## Uninstall
-1. Stop & disable: `sudo systemctl disable --now assignment-sensor.service`
-2. Remove unit: `sudo rm /etc/systemd/system/assignment-sensor.service`
-3. Reload: `sudo systemctl daemon-reload`
-4. Remove binary: `sudo rm /usr/local/bin/assignment-sensor`
+```bash
+sudo systemctl stop random-sensor.service
+sudo systemctl disable random-sensor.service
+sudo rm /etc/systemd/system/random-sensor.service /usr/local/bin/random-sensor-service
+sudo systemctl daemon-reload
+```
+- Cleans up; service logs persist in /tmp/sensor.log (manual rm if needed).
+
+## Implementation Roadmap
+See `roadmap.sh` for stages (completed: setup, sampler, logging, CLI; current: systemd; pending: full testing, polish).
 
 ## Additional Notes
-- Mock sensor: Reads 4 bytes from /dev/urandom as u32, hex-encoded.
-- Logging: Line-buffered, ISO-8601 timestamps.
-- Runs as root by default; adjust User= in service for non-root.
-- AI-assisted: See `ai/` folder.
-- Project structure: See `project_structure.md` for details.
+- Security: Runs as root; consider `User=nobody` in service for non-privileged (ensure log/device access).
+- Fallback: If /tmp unwritable, logs to /var/tmp/sensor.log; if both fail, stderr (view via journalctl).
+- Mock sensor: 4 bytes u32 from device, little-endian hex.
+- Timestamps: UTC ISO-8601 with nanoseconds (Z offset).
+- Evidence: AI interactions in `ai/prompt-log.md`; reflection in `ai/reflection.md`.
 
+See `roadmap.md` for details; run `./test.sh` to verify core functionality.

@@ -11,7 +11,7 @@ cargo run --quiet &
 
 PID=$!
 
-# Wait for a few iterations (500ms sleep + buffer)
+# Wait for a few iterations (1s sleep + buffer)
 
 sleep 3
 

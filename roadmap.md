@@ -3,7 +3,7 @@
 
 ## Stage 1: Project Setup
 Acceptance Criteria:
-- Create Cargo.toml with dependencies (tokio for async? No, keep it sync for simplicity; chrono for timestamps; clap for CLI).
+- Create Cargo.toml with dependencies (chrono for timestamps; clap for CLI).
 - Initialize src/main.rs with basic structure.
 - Create suggested directory structure: src/, systemd/, tests/, ai/, README.md.
 - Cargo.toml includes build scripts if needed.

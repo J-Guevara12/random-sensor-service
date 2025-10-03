@@ -1,9 +1,25 @@
 mod sensor;
 
+use std::thread;
+use std::time::Duration;
+use signal_hook::consts::SIGTERM;
+use signal_hook::iterator::Signals;
+
 fn main() {
-    // Basic main loop placeholder - to be expanded
-    match sensor::read_sensor("/dev/urandom") {
-        Ok(value) => println!("Read value: {}", value),
-        Err(e) => eprintln!("Error: {}", e),
+    let mut signals = Signals::new(&[SIGTERM]).expect("Failed to create signal handler");
+
+    loop {
+        // Check for signals before reading
+        if signals.pending().next().is_some() {
+            println!("Received SIGTERM, exiting gracefully.");
+            break;
+        }
+
+        match sensor::read_sensor("/dev/urandom") {
+            Ok(value) => println!("Read sensor value: {}", value),
+            Err(e) => eprintln!("Error reading sensor: {}", e),
+        }
+
+        thread::sleep(Duration::from_millis(500));
     }
 }

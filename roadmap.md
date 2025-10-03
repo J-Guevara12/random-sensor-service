@@ -13,9 +13,9 @@ Acceptance Criteria:
 ## Stage 2: Core Sampler Implementation
 Acceptance Criteria:
 - [X] Function to read from mock sensor (e.g., /dev/urandom, read 4 bytes as u32).
-- [ ] Infinite loop that sleeps for configurable interval.
-- [ ] Handles graceful shutdown on SIGTERM (use signal-hook crate).
-- [ ] Exits non-zero on init errors (e.g., can't open device).
+- [X] Infinite loop that sleeps for configurable interval.
+- [X] Handles graceful shutdown on SIGTERM (use signal-hook crate).
+- [X] Exits non-zero on init errors (e.g., can't open device).
 
 
 ## Stage 3: Logging and Error Handling 

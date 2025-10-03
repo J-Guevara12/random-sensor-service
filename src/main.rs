@@ -2,6 +2,7 @@ mod sensor;
 
 use std::thread;
 use std::time::Duration;
+use std::process::exit;
 use signal_hook::consts::SIGTERM;
 use signal_hook::iterator::Signals;
 
@@ -15,9 +16,9 @@ fn main() {
             break;
         }
 
-        match sensor::read_sensor("/dev/urandom") {
+        match sensor::read_sensor("/dev/urandoma") {
             Ok(value) => println!("Read sensor value: {}", value),
-            Err(e) => eprintln!("Error reading sensor: {}", e),
+            Err(e) => {eprintln!("Error reading sensor: {}", e); exit(66)},
         }
 
         thread::sleep(Duration::from_millis(500));

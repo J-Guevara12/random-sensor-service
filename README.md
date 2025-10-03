@@ -31,8 +31,8 @@ random-sensor.service - Random Sensor Logging Service
 
 ## Clone & Build
 ```bash
-git clone <repo-url>
-cd 3-random-sensor-service
+git clone https://github.com/J-Guevara12/random-sensor-service
+cd random-sensor-service
 cargo build --release
 ```
 - Binary: `target/release/random-sensor-service`

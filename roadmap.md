@@ -22,9 +22,9 @@ Acceptance Criteria:
 Acceptance Criteria:
 - [X] Generate ISO-8601 timestamp using chrono.
 - [X] Append log line: timestamp | value (hex or decimal).
-- [ ] Open log file in /tmp, fallback to /var/tmp if unwritable.
-- [ ] Line-buffered logging to avoid partial lines.
-- [ ] Handle file write errors gracefully.
+- [X] Open log file in /tmp, fallback to /var/tmp if unwritable.
+- [X] Line-buffered logging to avoid partial lines.
+- [X] Handle file write errors gracefully.
 
 
 ## Stage 4: CLI Configuration 

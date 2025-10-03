@@ -6,3 +6,4 @@ edition = "2024"
 [dependencies]
 chrono = "0.4.42"
 clap = "4.5.48"
+tempfile = "3.23.0"
